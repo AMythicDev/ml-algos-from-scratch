@@ -1,6 +1,5 @@
 #set par(leading: 0.55em, justify: true)
 #set text(font: "New Computer Modern")
-#set list(indent: 1.8em)
 #show raw: set text(font: "New Computer Modern Mono")
 #show heading: set block(above: 1.4em, below: 1em)
 
@@ -85,9 +84,7 @@ for i, (A, B, title) in enumerate(datasets):
     plt.grid(True)
 
 plt.tight_layout()
-plt.savefig("fig1.png", bbox_inches='tight')
 plt.show()
-
 ```
 
 #figure(
@@ -161,6 +158,7 @@ Dataset 3: Not Linearly Separable.
 ```
 
 == Finding Solution for the Primal and Dual problem and Verification of KKT conditions
+=== The Primal and Dual Problem
 The Primal problem defined as
 $
 min_(w in R^2) #h(10pt) f(w) = 1/2 ||w||^2_2
@@ -174,17 +172,21 @@ The Dual problem defined as
 $
 max_(lambda >= 0) #h(10pt) (sum_(i=1)^N lambda_i - 1/2 sum_(i=1)^N sum_(j=1)^N lambda_i lambda_j hat(y)_i hat(y)_j (hat(x)_i)^T hat(x)_j)
 \
-"Subject to" #h(10pt) sum_(i=1)^N lambda_i lambda_i hat(y)_i = 0 #h(10pt) 0 <= lambda_i #h(10pt) forall i in {N}
+"Subject to" #h(10pt) sum_(i=1)^N lambda_i hat(y)_i = 0 #h(10pt) 0 <= lambda_i #h(10pt) forall i in {N}
 $
 is usful for determining how much importance or weight each individual data point has in defining the final boundary.
 
-Let $(w^*, b^*)$ be the primal optimal solution and $lambda^*$ be the dual optimal solution. Then the KKT conditions are defined as:
-#set enum(spacing: 15pt)
+The most important property of the dual problem is that the kernel trick can be applied on it. This is used for classifying non-linear datasets.
 
+=== KKT Conditions
+Let $(w^*, b^*)$ be the primal optimal solution and $lambda^*$ be the dual optimal solution. Then the KKT conditions are defined as:
+
+#set enum(spacing: 15pt)
 1. $lambda_i^* >= 0, #h(10pt) sum_(i=1)^N lambda_i^* hat(y)_i = 0$
 2. $1 - hat(y)_i ((w^*)^T hat(x)_i + b^*) <= 0$
 3. $lambda_i^* [1 - hat(y)_i ((w^*)^T hat(x)_i + b^*)] = 0$
 4. $w^* = sum_(i = 1)^N lambda_i^* hat(x)_i hat(y)_i$
+#set enum(spacing: auto)
 
 #codly(header: [*Solution for Primal and Dual problem*], number-format: numbering.with("1"))
 ```python
@@ -226,23 +228,24 @@ print("\n" + "-" * 30)
 print("KKT CONDITION VERIFICATION")
 print("-" * 30)
 
-# 1. Stationarity
-stationarity_err = np.linalg.norm(w_p.value - w_from_dual)
-print(f"1. Stationarity (||w_p - w_d||): {stationarity_err:.2e}")
+# 1. Dual Feasibility
+min_alpha = np.min(alpha.value)
+print(f"3. Dual Feasibility (Min alpha >= 0): {min_alpha:.2e}")
 
 # 2. Primal Feasibility
 min_margin = np.min(y * (X @ w_p.value + b_p.value))
 print(f"2. Primal Feasibility (Min Margin >= 1): {min_margin:.4f}")
 
-# 3. Dual Feasibility
-min_alpha = np.min(alpha.value)
-print(f"3. Dual Feasibility (Min alpha >= 0): {min_alpha:.2e}")
-
-# 4. Complementary Slackness
+# 3. Complementary Slackness
 # alpha_i * (y_i(w.T x_i + b) - 1) should be 0
 margin_gap = y * (X @ w_p.value + b_p.value) - 1
 slackness = np.abs(alpha.value * margin_gap)
 print(f"4. Max Complementary Slackness: {np.max(slackness):.2e}")
+
+# 4. Stationarity
+stationarity_err = np.linalg.norm(w_p.value - w_from_dual)
+print(f"1. Stationarity (||w_p - w_d||): {stationarity_err:.2e}")
+
 print(f"   Number of Support Vectors: {len(sv_indices)}")
 print("-" * 30)
 ```
@@ -260,16 +263,25 @@ Dual bias (b):      -0.0286
 ------------------------------
 KKT CONDITION VERIFICATION
 ------------------------------
-1. Stationarity (||w_p - w_d||): 7.85e-17
+1. Dual Feasibility (Min alpha >= 0): -9.29e-23
 2. Primal Feasibility (Min Margin >= 1): 1.0000
-3. Dual Feasibility (Min alpha >= 0): -9.29e-23
-4. Max Complementary Slackness: 2.37e-17
+3. Max Complementary Slackness: 2.37e-17
+4. Stationarity (||w_p - w_d||): 7.85e-17
    Number of Support Vectors: 2
 ------------------------------
 ```
 
+=== Ibservations
++ The primal and dual problems with a hard margin can only be solved for Dataset 1. The other two datasets lack a linear classifier; therefore, they cannot be solved using this method.
+
++ Both the primal and dual problems converge to the same solution, proving that they two different ways to view and solve the same underlying problem.
+
++ *It turns out that the $P$ matrix used while solving the dual problem has some negative eigenvalues that are extremely close to zero but do not converge to it. This prevents the matrix from being positive semi-definite and makes the problem non-convex. To resolve this, we use the `cvxpy.psd_wrap()` function on the $P$ matrix to treat it as a positive semi-definite matrix.*
+
++ Each of the KKT conditions mentioned earlier is perfectly satisfied by the obtained solution.
+
 == Plotting the Hyperplane of Dataset 1
-#codly(header: [], number-format: numbering.with("1"))
+#codly(header: none, number-format: numbering.with("1"))
 ```python
 def plot_svm_results(setA, setB, w, b, alpha):
     plt.figure(figsize=(10, 8))
@@ -307,7 +319,6 @@ def plot_svm_results(setA, setB, w, b, alpha):
     plt.title("SVM Linear Classifier: Hyperplane and Margins")
     plt.legend()
     plt.grid(True, linestyle=':', alpha=0.6)
-    plt.savefig("fig2.png", bbox_inches='tight')
     plt.show()
 
 # Run the plotting function using values from the previous code block
@@ -317,3 +328,246 @@ plot_svm_results(setA1, setB1, w_p.value, b_p.value, alpha.value)
 #figure(
   image("fig2.png", height: 300pt, fit: "stretch"),
 )
+
+== The Relaxed SVM Solver
+To classify dataset 2, we fallback to a relaxed SVM solver. We introduce slack variables $xi_i >= 0$, which allow some points to be inside the margin or even on the wrong side of the boundary. With this, the new optimization problem becomes
+$
+min_(w in R^2, b in R, xi in R^N) #h(10pt) f(w) = 1/2 ||w||_2^2 + C sum_(i=1)^(n) xi_i
+\
+"Subject to" #h(10pt) 1 - hat(y)_i (w^T phi.alt (hat(x)_i) + b) <= xi_i, #h(10pt) xi_i >= 0, #h(10pt) forall i in {1, 2, dots, N}
+$
+where $C > 0$ is a large positive constant which penalizes nonzero values of $x$ variables.
+
+#codly(header: [*Relaxed SVM solver*], number-format: numbering.with("1"))
+```python
+def solve_soft_margin_svm(setA, setB, C=1.0):
+    X = np.vstack([setA, setB])
+    y = np.hstack([np.ones(len(setA)), -np.ones(len(setB))])
+    N, d = X.shape
+
+    w = cp.Variable(d)
+    b = cp.Variable()
+    xi = cp.Variable(N)  # Slack variables
+
+    # Objective: 0.5*||w||^2 + C * sum(xi)
+    obj = cp.Minimize(0.5 * cp.sum_squares(w) + C * cp.sum(xi))
+    
+    # Constraints
+    constraints = [
+        cp.multiply(y, X @ w + b) >= 1 - xi,
+        xi >= 0
+    ]
+    
+    prob = cp.Problem(obj, constraints)
+    prob.solve()
+    
+    # Identify outliers: points where xi > 0 (using a small threshold for noise)
+    outliers_idx = np.where(xi.value > 1e-5)[0]
+    
+    return w.value, b.value, xi.value, outliers_idx
+
+def plot_soft_margin_results(setA, setB, w, b, xi):
+    plt.figure(figsize=(10, 8))
+    
+    # Plot the data points
+    plt.scatter(setA[:, 0], setA[:, 1], c='red', label='Class +1')
+    plt.scatter(setB[:, 0], setB[:, 1], c='blue', label='Class -1')
+    
+    # Define plot limits
+    ax = plt.gca()
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    
+    # Create grid to evaluate model
+    xx = np.linspace(xlim[0], xlim[1], 100)
+    yy = np.linspace(ylim[0], ylim[1], 100)
+    YY, XX = np.meshgrid(yy, xx)
+    xy = np.vstack([XX.ravel(), YY.ravel()]).T
+    
+    # Calculate decision boundary Z = w.T @ x + b
+    Z = (xy @ w + b).reshape(XX.shape)
+    
+    # Plot decision boundary (0) and margins (-1, 1)
+    cont = ax.contour(XX, YY, Z, colors='k', levels=[-1, 0, 1], alpha=0.8,
+               linestyles=['--', '-', '--'])
+    plt.clabel(cont, inline=True, fontsize=10)
+    
+    # Highlight Outliers (xi > 1e-5)
+    X_all = np.vstack([setA, setB])
+    outlier_idx = np.where(xi > 1e-5)[0]
+    plt.scatter(X_all[outlier_idx, 0], X_all[outlier_idx, 1], s=100,
+                linewidth=1.5, facecolors='none', edgecolors='black', 
+                label=r'Outliers ($\epsilon > 0$)')
+
+    plt.title(f"Soft Margin SVM (Dataset 2)\nOutliers detected: {len(outlier_idx)}")
+    plt.legend()
+    plt.show()
+
+# Solve for Dataset 2
+w2, b2, xi2, outliers2 = solve_soft_margin_svm(setA2, setB2, C=1.0)
+
+print(f"Hyperplane: {w2[0]:.4f}x + {w2[1]:.4f}y + {b2:.4f} = 0")
+print(f"Number of outliers (points violating the margin): {len(outliers2)}")
+
+plot_soft_margin_results(setA2, setB2, w2, b2, xi2)
+```
+
+#codly(header: [*Result*], number-format: none)
+```
+Hyperplane: 1.5280x + 1.1947y + -0.0364 = 0
+Number of outliers (points violating the margin): 13
+```
+
+#figure(image("./fig3.png"))
+
+=== Ibservations
++ The classifier was able to find a suitable hyperplane that is able to maximally classify the dataset points with only a handful of outliers.
++ In total there are 13 outliers with 6 points from +1 set and 7 from the -1 set for $C = 1$.
++ The number of outliers decrease as we increase $C$ and increase we increase $C$. For example at $C = 10$, the number of outliers is 9, at $C = 100$ there are 8 outliers whereas at 28 outliers.
++ This is because the gap between the support vectors depends on $C$, for smaller values of $C$, the gap is large whereas it is slim for high values of $C$.
++ We conclude that if $C$ is very high, the classifier is prone to overfitting because of extremely thin support vector gap whereas it is prone to underfitting for low
+  values of $C$ as the margins are quite wide.
+
+== The Non-Linear Guassian Classifier
+The third dataset can be classified by solving the dual SVM problem with the kernel trick. 
+
+$
+max_(lambda >= 0) #h(10pt) (sum_(i=1)^N lambda_i - 1/2 sum_(i=1)^N sum_(j=1)^N lambda_i lambda_j hat(y)_i hat(y)_j K(x, y))
+\
+"Subject to" #h(10pt) sum_(i=1)^N lambda_i hat(y)_i = 0, #h(10pt) 0 <= lambda_i <= C, #h(10pt) forall i in {N}
+$
+
+We use the Guassian/RBF kernel defined as
+
+$
+K(x, y) = e^(-gamma||x - y||^2)
+$
+
+```python
+def rbf_kernel(X, Y, gamma):
+    # Efficiently compute ||x-y||^2 using expansion: x^2 - 2xy + y^2
+    X_sq = np.sum(X**2, axis=1).reshape(-1, 1)
+    Y_sq = np.sum(Y**2, axis=1).reshape(1, -1)
+    sq_dists = X_sq + Y_sq - 2 * (X @ Y.T)
+    return np.exp(-gamma * sq_dists)
+
+def solve_kernel_svm(X, y, gamma, C=1.0):
+    N = X.shape[0]
+    K = rbf_kernel(X, X, gamma)
+    # P matrix for CVXPY: P_ij = y_i * y_j * K(x_i, x_j)
+    P = np.outer(y, y) * K
+    
+    alpha = cp.Variable(N)
+    obj = cp.Maximize(cp.sum(alpha) - 0.5 * cp.quad_form(alpha, cp.psd_wrap(P)))
+    constraints = [alpha >= 0, alpha <= C, cp.sum(cp.multiply(alpha, y)) == 0]
+    
+    prob = cp.Problem(obj, constraints)
+    prob.solve()
+    
+    # Calculate bias b using support vectors (where 0 < alpha < C)
+    # Average over support vectors for stability
+    sv_idx = np.where((alpha.value > 1e-4) & (alpha.value < C - 1e-4))[0]
+    if len(sv_idx) == 0: # Fallback to all support vectors if none are strictly inside
+        sv_idx = np.where(alpha.value > 1e-4)[0]
+    
+    # Decision function: f(x) = sum(alpha_i * y_i * K(x_i, x)) + b
+    # We find b such that f(x_sv) = y_sv
+    k_sv = K[:, sv_idx]
+    b = np.mean(y[sv_idx] - np.sum((alpha.value * y)[:, None] * k_sv, axis=0))
+    
+    return alpha.value, b
+
+# Dataset 3 (Circular) is the best candidate for this
+X3 = np.vstack([setA3, setB3])
+y3 = np.hstack([np.ones(len(setA3)), -np.ones(len(setB3))])
+
+gammas = [0.1, 1, 10]
+fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+for i, g in enumerate(gammas):
+    alphas, b = solve_kernel_svm(X3, y3, gamma=g, C=1.0)
+    
+    # Plotting logic
+    ax = axes[i]
+    ax.scatter(setA3[:, 0], setA3[:, 1], c='blue', alpha=0.5)
+    ax.scatter(setB3[:, 0], setB3[:, 1], c='red', alpha=0.5)
+    
+    # Create grid for decision boundary
+    x_min, x_max = X3[:, 0].min() - 0.5, X3[:, 0].max() + 0.5
+    y_min, y_max = X3[:, 1].min() - 0.5, X3[:, 1].max() + 0.5
+    xx, yy = np.meshgrid(np.linspace(x_min, x_max, 50), np.linspace(y_min, y_max, 50))
+    grid_points = np.c_[xx.ravel(), yy.ravel()]
+    
+    # Evaluate decision function on grid
+    K_grid = rbf_kernel(X3, grid_points, gamma=g)
+    Z = (np.sum((alphas * y3)[:, None] * K_grid, axis=0) + b).reshape(xx.shape)
+    
+    ax.contour(xx, yy, Z, levels=[0], colors='black', linewidths=2)
+    ax.set_title(fr"RBF Kernel | $\gamma$ = {g}")
+plt.show()
+```
+
+#figure(image("./fig4.png"))
+
+=== Observations
++ The RBF kernel was able to find a circular hyperplane perfectly separating class +1 and -1 with no outliers.
++ For different values of $gamma$, the shape of boundary varies significantly
+  - For very small values of $gamma$, the boundary curve is exactly circular with almost equal radial separation between the inner points and outer points.
+  - For moderate values of $gamma$, the curve is becomes a little distorted with a lesser radial separation between the inner points and more between the outer points.
+  - For higher values of $gamma$, the curve is becomes most distorted with and almost tight with the inner points and far from the outer points.
+    The boundary distorts in way that it is able to separate the two classes even with tighter margin for outliers.
++ This concludes that for very high values of $gamma$ the classifier is prone to overfitting whereas for very small values the produced model will be underfitted.
+
+== Classification of Points in $R^2$ Space
+We take the $R^2$ vector space and classify each point in it to determine if it belongs to class +1 or -1. This visualization will show how the decision boundary changes as the kernel width parameter $gamma$ varies.
+
+```python
+# Grid setup
+resolution = 0.1
+grid_range = np.arange(-2, 2 + resolution, resolution)
+xx, yy = np.meshgrid(grid_range, grid_range)
+grid_points = np.c_[xx.ravel(), yy.ravel()]
+
+fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+
+for i, gamma in enumerate(gammas):
+    alpha_vals, b_val = solve_kernel_svm(X3, y3, gamma)
+    
+    # Predict on grid: f(x) = sign(sum(alpha_i * y_i * K(x_i, x_grid)) + b)
+    K_grid = rbf_kernel(X3, grid_points, gamma)
+    decision_values = np.sum((alpha_vals * y3)[:, None] * K_grid, axis=0) + b_val
+    grid_labels = np.sign(decision_values)
+    
+    # Plot grid
+    axes[i].scatter(grid_points[grid_labels == 1, 0], grid_points[grid_labels == 1, 1], 
+                    color='blue', s=10, alpha=0.2, label='Grid +1')
+    axes[i].scatter(grid_points[grid_labels == -1, 0], grid_points[grid_labels == -1, 1], 
+                    color='red', s=10, alpha=0.2, label='Grid -1')
+    
+    # Overlay original points
+    axes[i].scatter(setA3[:, 0], setA3[:, 1], c='blue', edgecolors='k', s=30, label='Data +1')
+    axes[i].scatter(setB3[:, 0], setB3[:, 1], c='red', edgecolors='k', s=30, label='Data -1')
+    
+    axes[i].set_title(rf"Nonlinear SVM ($\gamma$ = {gamma})")
+    axes[i].set_xlim([-2, 2])
+    axes[i].set_ylim([-2, 2])
+
+plt.tight_layout()
+plt.show()
+```
+
+#figure(image("./fig5.png"))
+
+#pagebreak()
+
+== Conclusion
++ The given datasets contain three differently distributed sets of data points, each one requiring a different type of classifier.
+  - Dataset 1 has clear linearly separable points that can be classified easily with a linear SVM classifier with hard margins.
+  - Dataset 2 has outliers points that cannot be separated by linear hard margin classifier, so we relax the margin criterias to allow for some tolerance of errors.
+  - Dataset 3 cannot be separated by a linear classifier at all so we use the kernel trick with the RBF kernel to classify the points.
++ For each classification models, we were able to successfully classify the points into either of the classes.
+  - The solution produced by hard margin linear classifier used in dataset 1 well satisfies the KKT conditions.
+  - The soft-margin linear classifier used to classify dataset 2 allowed some outliers, the number of which depended on the $C$ hyperparameter.
+  - The non-linear classifier used on dataset 3 perfectly classified the points into either of the classes with no outliers.
++ The shape of the boundary curve generated by the RBF kernel heavily depended on the $gamma$ parameter, with higher values of $gamma$ causing more distortion to the
+  the circle.
