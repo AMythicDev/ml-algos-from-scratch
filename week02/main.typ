@@ -61,7 +61,6 @@ X = np.random.uniform(-5, 5, (n_samples, n_inputs))
 
 def generate_y_values(X):
     w = np.random.uniform(-1, 1, 15)
-    print("Actual weights:", w)
     
     y = []
     for x in X:
@@ -244,6 +243,9 @@ From the above result, we can clearly see that the QP solver was able to correct
 #codly(number-format: numbering.with("1"))
 ```python
 import matplotlib.pyplot as plt
+
+w_opt = np.linalg.solve(Phi.T @ Phi, Phi.T @ y)
+print("The obtained optimal weights are:", w_opt)
 
 predictions = Phi @ w_opt
 error_vector = y - predictions

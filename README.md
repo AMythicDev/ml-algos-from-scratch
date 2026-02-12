@@ -33,10 +33,13 @@ This serves as my dumping ground for everything I have done throughout this cour
   jupyter-lab
   ```
 
+## List of Topics
+
 | Topic                                      | Folder Link          |
 | ------------------------------------------ | -------------------- |
 | Gradient-based Algorithms for Optimization | [Week 1](./week01/)  |
 | Regression                                 | [Week 2](./week02/)  |
+| Support Vector Machines                    | [Week 3](./week03/)  |
 
 ## Learning from this
 I have tried to document the most important learning points in the Jupyter notebook files and the associated reports. 
