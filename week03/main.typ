@@ -521,8 +521,12 @@ plt.show()
 == Classification of Points in $R^2$ Space
 We take the $R^2$ vector space and classify each point in it to determine if it belongs to class +1 or -1. This visualization will show how the decision boundary changes as the kernel width parameter $gamma$ varies.
 
+To determine if a point belongs to class +1 or -1, we use the following equation
+$
+"sgn"[ sum_(i=1)^N lambda_i^* hat(y)_i K(x, y) + b^*]
+$
+
 ```python
-# Grid setup
 resolution = 0.1
 grid_range = np.arange(-2, 2 + resolution, resolution)
 xx, yy = np.meshgrid(grid_range, grid_range)
@@ -538,13 +542,11 @@ for i, gamma in enumerate(gammas):
     decision_values = np.sum((alpha_vals * y3)[:, None] * K_grid, axis=0) + b_val
     grid_labels = np.sign(decision_values)
     
-    # Plot grid
     axes[i].scatter(grid_points[grid_labels == 1, 0], grid_points[grid_labels == 1, 1], 
                     color='blue', s=10, alpha=0.2, label='Grid +1')
     axes[i].scatter(grid_points[grid_labels == -1, 0], grid_points[grid_labels == -1, 1], 
                     color='red', s=10, alpha=0.2, label='Grid -1')
     
-    # Overlay original points
     axes[i].scatter(setA3[:, 0], setA3[:, 1], c='blue', edgecolors='k', s=30, label='Data +1')
     axes[i].scatter(setB3[:, 0], setB3[:, 1], c='red', edgecolors='k', s=30, label='Data -1')
     
@@ -557,8 +559,6 @@ plt.show()
 ```
 
 #figure(image("./fig5.png"))
-
-#pagebreak()
 
 == Conclusion
 + The given datasets contain three differently distributed sets of data points, each one requiring a different type of classifier.
