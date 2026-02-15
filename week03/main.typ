@@ -91,7 +91,7 @@ plt.show()
   image("fig1.png"),
 )
 
-== Checking the Existance of a Linear Classifier
+== Checking the Existence of a Linear Classifier
 For a dataset to be separable by linear classifier, there must exist a weight vector $w$ and a bias $b$ such that for every point $x_i$ with label $y_i in {1, -1}$:
 
 #set math.equation(numbering: "(1)")
@@ -106,7 +106,7 @@ To find the separating hyperplane, we treat this as a Hard Margin SVM optimizati
 $
 min_(w in R^2) #h(10pt) f(w) = 1/2 ||w||^2_2
 $
-constrainted to above @con condition.
+constrained to the above @con condition.
 
 #codly(header: [*Linear Classifier using `cvxpy`*])
 ```python
@@ -174,7 +174,7 @@ max_(lambda >= 0) #h(10pt) (sum_(i=1)^N lambda_i - 1/2 sum_(i=1)^N sum_(j=1)^N l
 \
 "Subject to" #h(10pt) sum_(i=1)^N lambda_i hat(y)_i = 0 #h(10pt) 0 <= lambda_i #h(10pt) forall i in {N}
 $
-is usful for determining how much importance or weight each individual data point has in defining the final boundary.
+is useful for determining how much importance or weight each individual data point has in defining the final boundary.
 
 The most important property of the dual problem is that the kernel trick can be applied on it. This is used for classifying non-linear datasets.
 
@@ -271,10 +271,10 @@ KKT CONDITION VERIFICATION
 ------------------------------
 ```
 
-=== Ibservations
+=== Observations
 + The primal and dual problems with a hard margin can only be solved for Dataset 1. The other two datasets lack a linear classifier; therefore, they cannot be solved using this method.
 
-+ Both the primal and dual problems converge to the same solution, proving that they two different ways to view and solve the same underlying problem.
++ Both the primal and dual problems converge to the same solution, proving that they are two different ways to view and solve the same underlying problem.
 
 + *It turns out that the $P$ matrix used while solving the dual problem has some negative eigenvalues that are extremely close to zero but do not converge to it. This prevents the matrix from being positive semi-definite and makes the problem non-convex. To resolve this, we use the `cvxpy.psd_wrap()` function on the $P$ matrix to treat it as a positive semi-definite matrix.*
 
@@ -330,13 +330,13 @@ plot_svm_results(setA1, setB1, w_p.value, b_p.value, alpha.value)
 )
 
 == The Relaxed SVM Solver
-To classify dataset 2, we fallback to a relaxed SVM solver. We introduce slack variables $xi_i >= 0$, which allow some points to be inside the margin or even on the wrong side of the boundary. With this, the new optimization problem becomes
+To classify Dataset 2, we fall back to a relaxed SVM solver. We introduce slack variables $xi_i >= 0$, which allow some points to be inside the margin or even on the wrong side of the boundary. With this, the new optimization problem becomes
 $
 min_(w in R^2, b in R, xi in R^N) #h(10pt) f(w) = 1/2 ||w||_2^2 + C sum_(i=1)^(n) xi_i
 \
 "Subject to" #h(10pt) 1 - hat(y)_i (w^T phi.alt (hat(x)_i) + b) <= xi_i, #h(10pt) xi_i >= 0, #h(10pt) forall i in {1, 2, dots, N}
 $
-where $C > 0$ is a large positive constant which penalizes nonzero values of $x$ variables.
+where $C > 0$ is a large positive constant that penalizes nonzero values of the slack variables ($\xi_i$).
 
 #codly(header: [*Relaxed SVM solver*], number-format: numbering.with("1"))
 ```python
@@ -420,15 +420,15 @@ Number of outliers (points violating the margin): 13
 
 #figure(image("./fig3.png"))
 
-=== Ibservations
-+ The classifier was able to find a suitable hyperplane that is able to maximally classify the dataset points with only a handful of outliers.
-+ In total there are 13 outliers with 6 points from +1 set and 7 from the -1 set for $C = 1$.
-+ The number of outliers decrease as we increase $C$ and increase we increase $C$. For example at $C = 10$, the number of outliers is 9, at $C = 100$ there are 8 outliers whereas at 28 outliers.
-+ This is because the gap between the support vectors depends on $C$, for smaller values of $C$, the gap is large whereas it is slim for high values of $C$.
-+ We conclude that if $C$ is very high, the classifier is prone to overfitting because of extremely thin support vector gap whereas it is prone to underfitting for low
+=== Observations
++ The classifier was able to find a suitable hyperplane that is able to accurately classify the dataset points with only a handful of outliers.
++ In total, there are 13 outliers, with 6 points from the +1 set and 7 from the -1 set for $C = 1$.
++ The number of outliers decreases as we increase $C$. For example, at $C = 10$, the number of outliers is 9, and at $C = 100$ there are 8 outliers, whereas for smaller $C$ values there are up to 28 outliers.
++ This is because the gap between the support vectors depends on $C$; for smaller values of $C$, the gap is large, whereas it is slim for high values of $C$.
++ We conclude that if $C$ is very high, the classifier is prone to overfitting because of the extremely thin support vector gap, whereas it is prone to underfitting for low
   values of $C$ as the margins are quite wide.
 
-== The Non-Linear Guassian Classifier
+== The Non-Linear Gaussian Classifier
 The third dataset can be classified by solving the dual SVM problem with the kernel trick. 
 
 $
@@ -437,7 +437,7 @@ max_(lambda >= 0) #h(10pt) (sum_(i=1)^N lambda_i - 1/2 sum_(i=1)^N sum_(j=1)^N l
 "Subject to" #h(10pt) sum_(i=1)^N lambda_i hat(y)_i = 0, #h(10pt) 0 <= lambda_i <= C, #h(10pt) forall i in {N}
 $
 
-We use the Guassian/RBF kernel defined as
+We use the Gaussian/RBF kernel defined as
 
 $
 K(x, y) = e^(-gamma||x - y||^2)
@@ -511,12 +511,12 @@ plt.show()
 
 === Observations
 + The RBF kernel was able to find a circular hyperplane perfectly separating class +1 and -1 with no outliers.
-+ For different values of $gamma$, the shape of boundary varies significantly
++ For different values of $gamma$, the shape of the boundary varies significantly:
   - For very small values of $gamma$, the boundary curve is exactly circular with almost equal radial separation between the inner points and outer points.
-  - For moderate values of $gamma$, the curve is becomes a little distorted with a lesser radial separation between the inner points and more between the outer points.
-  - For higher values of $gamma$, the curve is becomes most distorted with and almost tight with the inner points and far from the outer points.
-    The boundary distorts in way that it is able to separate the two classes even with tighter margin for outliers.
-+ This concludes that for very high values of $gamma$ the classifier is prone to overfitting whereas for very small values the produced model will be underfitted.
+  - For moderate values of $gamma$, the curve becomes a little distorted with a lesser radial separation between the inner points and more between the outer points.
+  - For higher values of $gamma$, the curve becomes most distorted and is almost tight with the inner points and far from the outer points.
+    The boundary distorts in a way that it is able to separate the two classes even with a tighter margin for outliers.
++ This concludes that for very high values of $gamma$, the classifier is prone to overfitting, whereas for very small values, the produced model will be underfitted.
 
 == Classification of Points in $R^2$ Space
 We take the $R^2$ vector space and classify each point in it to determine if it belongs to class +1 or -1. This visualization will show how the decision boundary changes as the kernel width parameter $gamma$ varies.
@@ -563,11 +563,11 @@ plt.show()
 == Conclusion
 + The given datasets contain three differently distributed sets of data points, each one requiring a different type of classifier.
   - Dataset 1 has clear linearly separable points that can be classified easily with a linear SVM classifier with hard margins.
-  - Dataset 2 has outliers points that cannot be separated by linear hard margin classifier, so we relax the margin criterias to allow for some tolerance of errors.
-  - Dataset 3 cannot be separated by a linear classifier at all so we use the kernel trick with the RBF kernel to classify the points.
-+ For each classification models, we were able to successfully classify the points into either of the classes.
-  - The solution produced by hard margin linear classifier used in dataset 1 well satisfies the KKT conditions.
-  - The soft-margin linear classifier used to classify dataset 2 allowed some outliers, the number of which depended on the $C$ hyperparameter.
-  - The non-linear classifier used on dataset 3 perfectly classified the points into either of the classes with no outliers.
+  - Dataset 2 has outlier points that cannot be separated by a linear hard margin classifier, so we relax the margin criteria to allow for some tolerance of errors.
+  - Dataset 3 cannot be separated by a linear classifier at all, so we use the kernel trick with the RBF kernel to classify the points.
++ For each classification model, we were able to successfully classify the points into their respective classes.
+  - The solution produced by the hard margin linear classifier used for Dataset 1 satisfies the KKT conditions.
+  - The soft-margin linear classifier used to classify Dataset 2 allowed some outliers, the number of which depended on the $C$ hyperparameter.
+  - The non-linear classifier used on Dataset 3 perfectly classified the points into either of the classes with no outliers.
 + The shape of the boundary curve generated by the RBF kernel heavily depended on the $gamma$ parameter, with higher values of $gamma$ causing more distortion to the
-  the circle.
+  circle.
