@@ -1,19 +1,21 @@
 [project]
-name = "aiml-lab"
+name = "ml-algos-from-scratch"
 version = "0.1.0"
-description = "Add your description here"
+description = "A collection of various ML algorithms implemented from scratch as part of my Algorithms, AI and ML Laboratory course"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "cvxpy>=1.8.1",
     "matplotlib>=3.10.8",
     "numpy>=2.4.2",
-    "numpy>=2.4.0",
     "pandas>=3.0.0",
 ]
 
 [dependency-groups]
 dev = [
+    "datalayer-pycrdt>=0.12.17",
+    "jupyter-collaboration>=4.2.1",
+    "jupyter-mcp-tools>=0.1.6",
     "jupyterlab>=4.5.3",
     "jupyterlab-vim>=4.1.4",
     "python-lsp-server[all]>=1.14.0",
