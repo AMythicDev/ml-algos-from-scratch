@@ -26,7 +26,15 @@ This skill automates the creation of comprehensive technical reports in the Typs
                 *   Generate point-wise "Observations" for any `stream` output or `image/png` plot, summarizing key findings or visual insights.
     *   **Conclusion:** Generate a comprehensive "Conclusion" section (`== Conclusion`) at the end of the report in a *pointwise fashion*. This should summarize the key findings, overall results, and important observations from the entire Jupyter Notebook analysis. Avoid generic placeholders; actively synthesize information from the processed cells.
 3.  **Write Final Typst File:** Assemble all the generated Typst content and write it to the specified output file (defaulting to `main.typ` in the same directory as the notebook).
-4.  **Confirm and Provide Output:** Inform the user that the report has been generated and provide the path to the `.typ` file.
+4.  **Compile to PDF:** Execute the `typst compile` command to generate the PDF report.
+    *   Default output filename: `report.pdf`
+    *   If user specifies a custom filename, use that instead.
+    *   Command format: `typst compile main.typ <output_filename>.pdf`
+5.  **Open PDF (Optional by Default):** Automatically open the generated PDF using the system's default PDF viewer.
+    *   Linux: `xdg-open <output_filename>.pdf`
+    *   macOS: `open <output_filename>.pdf`
+    *   Windows: `start <output_filename>.pdf`
+6.  **Confirm and Provide Output:** Inform the user that the report has been generated and provide the paths to both the `.typ` and `.pdf` files. Mention that the PDF was opened automatically.
 
 ## Report Structure and Formatting Rules (as LLM Guidance)
 
@@ -115,4 +123,13 @@ The user will still initiate the process by providing the notebook path:
 ```text
 Generate a report from my notebook at 'path/to/my_notebook.ipynb'
 ```
-The skill will then execute `parse_notebook_content.py`, process its JSON output, and generate `main.typ`.
+The skill will then execute `parse_notebook_content.py`, process its JSON output, generate `main.typ`, compile it to `report.pdf`, and automatically open the PDF.
+
+### Customizing Output Filename
+
+Users can specify a custom PDF filename:
+
+```text
+Generate a report from 'path/to/my_notebook.ipynb' as 'my_report.pdf'
+```
+If no custom filename is provided, the default `report.pdf` will be used.
