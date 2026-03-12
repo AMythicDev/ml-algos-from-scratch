@@ -3,6 +3,7 @@ name: jupyter-typst-report
 description: Generate and maintain professional technical reports in Typst format from Jupyter Notebooks (.ipynb) by dynamically generating descriptions, observations, and conclusions based on the notebook's content. Make sure to use this skill whenever the user mentions creating, updating, modifying, or editing a report, generating documentation, or reflecting changes from a Jupyter notebook to a professional document. This includes any request to 're-generate', 'refresh', or 'sync' a report, even if they don't explicitly ask for a 'new' report. This skill leverages the LLM to understand and summarize the notebook's execution and content.
 compatibility:
   - python
+  - typst
 ---
 
 # Jupyter to Typst Report Generator (LLM-Enhanced)
@@ -43,6 +44,9 @@ This skill automates the creation of comprehensive technical reports in the Typs
 - Be concise but informative in descriptions and observations.
 - Use the provided Typst formatting templates strictly.
 - Top-level headings (`=`) should only be used for the main report title. All subsequent major sections should use `==` or lower (e.g., `== Section Title`, `=== Subsection Title`).
+- **Writing Style:**
+    - Always add a new line separation for headings preceded by paragraphs or `#codly` declarations/code blocks following paragraphs.
+    - Always prefer using the auto-numbered `+` for ordered lists rather than manually writing numbers.
 
 ### 1. Preamble
 
@@ -96,11 +100,27 @@ Construct the report preamble using the extracted `report_title` and `assignment
 #### Code Cells
 
 -   **Generate Subheading and Description:** Based on the `cell.source` code, generate a suitable subheading (e.g., "Data Loading and Preprocessing", "Model Definition", "Experiment Execution") and a brief descriptive paragraph explaining the code's purpose. Consider the overall flow of the notebook.
--   **Code Block Formatting:** Format the `cell.source` code:
+-   **Source Code Embedding Rules:**
+    - **No Print Statements:** Do not embed lines containing `print()` statements.
+    - **Constructor Placeholder:** Do not include a class's `__init__()` if it only contains assignment of member variables. Instead, use this placeholder:
+      ```python
+      class SomeClass:
+          def __init__(self,
+                       # <further arguments from the notebook code cell>
+                      ):
+              # -- SETUP CODE --
+      ```
+      Fill `SomeClass` and `<further arguments from the notebook code cell>` from the class name and `__init__()` function respectively.
+    - **Function Subheadings:** For all important functions in a class (e.g., `.fit()`), create subheadings `===` with an appropriate title. Example:
+      ```typ
+      === The `.fit()` function
+      ```
+      Follow this with a **point-wise** description of how that function works.
+-   **Code Block Formatting:** Format the processed `cell.source` code:
     ```typ
     #codly(header: [*<Generated Code Block Title>*], number-format: numbering.with("1"))
     ```python
-    <cell.source>
+    <processed.cell.source>
     ```
 -   **Process Outputs (`cell.outputs` array):**
     *   **Stream Output:** If `output.type == "stream"`, format its `output.content`:

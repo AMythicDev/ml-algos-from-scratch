@@ -49,12 +49,6 @@ attributes = list(df.columns[:-1])
 target = df.columns[-1]
 X = df[attributes]
 y = df[target]
-
-print("Attributes:")
-print(X.head())
-print()
-print("Target:")
-print(y.head())
 ```
 
 #codly(header: [*Result*], number-format: none)
@@ -295,10 +289,6 @@ dt_model.fit(X_train, y_train)
 train_acc = dt_model.compute_accuracy(train_df) * 100
 val_acc = dt_model.compute_accuracy(val_df) * 100
 test_acc = dt_model.compute_accuracy(test_df) * 100
-
-print(f"Training accuracy: {train_acc:.2f}%")
-print(f"Validation accuracy: {val_acc:.2f}%")
-print(f"Testing accuracy: {test_acc:.2f}%")
 ```
 
 #codly(header: [*Result*], number-format: none)
