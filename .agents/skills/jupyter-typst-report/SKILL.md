@@ -1,6 +1,6 @@
 ---
 name: jupyter-typst-report
-description: Generate professional technical reports in Typst format from Jupyter Notebooks (.ipynb) by dynamically generating descriptions, observations, and conclusions based on the notebook's content. Use this skill whenever the user asks to create a report, generate documentation, or convert a Jupyter notebook to a professional document, especially when Typst or high-quality technical reports are mentioned. This skill leverages the LLM to understand and summarize the notebook's execution and content.
+description: Generate and maintain professional technical reports in Typst format from Jupyter Notebooks (.ipynb) by dynamically generating descriptions, observations, and conclusions based on the notebook's content. Make sure to use this skill whenever the user mentions creating, updating, modifying, or editing a report, generating documentation, or reflecting changes from a Jupyter notebook to a professional document. This includes any request to 're-generate', 'refresh', or 'sync' a report, even if they don't explicitly ask for a 'new' report. This skill leverages the LLM to understand and summarize the notebook's execution and content.
 compatibility:
   - python
 ---
@@ -61,9 +61,9 @@ Construct the report preamble using the extracted `report_title` and `assignment
 #codly(languages: codly-languages, display-icon: false, display-name: false, breakable: true)
 
 #align(center + horizon)[
-  == Department of Electrical Engineering \
-  == Indian Institute of Technology, Kharagpur \
-  == Algorithms, AI and ML Laboratory (EE22202) \
+  == Department of Electrical Engineering \ \
+  == Indian Institute of Technology, Kharagpur \ \
+  == Algorithms, AI and ML Laboratory (EE22202) \ \
   == Spring, 2025-26 \
   \
   = Report <assignment_num>: <report_title>
@@ -133,3 +133,14 @@ Users can specify a custom PDF filename:
 Generate a report from 'path/to/my_notebook.ipynb' as 'my_report.pdf'
 ```
 If no custom filename is provided, the default `report.pdf` will be used.
+
+### Updating/Editing Existing Reports
+
+Users can request an update or modification to an existing report based on recent notebook changes:
+
+```text
+Update the report in week05 to reflect the new accuracy results from the notebook.
+Modify the lab03 report; the random forest section needs to be refreshed with the new plot.
+Can you edit the report for week04? I've added more analysis in the notebook.
+```
+When these requests occur, the skill should be invoked to re-process the notebook and update the report accordingly.
