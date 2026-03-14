@@ -2,7 +2,7 @@
 
 This repository contains scratch implementations of machine learning algorithms. The following rules and guidelines are mandatory for all AI agents.
 
-## 🚀 Mandatory Operational Rules
+## Mandatory Operational Rules
 
 - **Notebook Handling**: **CRITICAL**: Never use standard file tools (`read`, `write`, `edit`) on `.ipynb` files. Always use the **Jupyter MCP connection**.
   - Use `jupyter_read_notebook` to inspect current state.
@@ -33,7 +33,7 @@ This repository contains scratch implementations of machine learning algorithms.
   - **Verify Single Change**: Use `jupyter_execute_cell` via MCP to run specific implementation and validation cells.
   - **Manual Verification**: After modifying an algorithm, run the "usage" cell to visualize results (e.g., plots, metrics). Ensure output matches mathematical expectations.
 
-## 🛠 MCP Tool Usage Tips
+## MCP Tool Usage Tips
 
 When using Jupyter MCP tools, follow these best practices:
 
@@ -42,7 +42,7 @@ When using Jupyter MCP tools, follow these best practices:
 - **Atomic Operations**: Try to combine related code changes into a single tool call if possible, but keep implementation and usage cells separate as per the mandatory rules.
 - **Capturing Output**: Always check the output of `jupyter_execute_cell` to ensure no hidden exceptions occurred during execution.
 
-## 🎨 Code Style & Conventions
+## Code Style & Conventions
 
 ### Imports
 - Standard Python imports at the top of the cell.
@@ -72,7 +72,7 @@ When using Jupyter MCP tools, follow these best practices:
     ```
 - This is mandatory whenever `matplotlib` code is used for plotting.
 
-## 📂 Project Structure
+## Project Structure
 
 - `weekXX/`: Organized by course weeks.
   - `labXX.ipynb`: Core implementation.
@@ -80,6 +80,6 @@ When using Jupyter MCP tools, follow these best practices:
   - `report.pdf`: Generated report.
   - Data files (`*.data`, `*.csv`): Local datasets used by notebooks.
 
-## ⚙️ Environment Configuration
+## Environment Configuration
 
 The environment is configured via `pyproject.toml`. Agents should always check this file first to understand the execution context and available tools.
