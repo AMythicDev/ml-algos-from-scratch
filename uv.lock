@@ -1626,7 +1626,6 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "cvxpy" },
-    { name = "jupyterlab" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "pandas" },
@@ -1645,7 +1644,6 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cvxpy", specifier = ">=1.8.1" },
-    { name = "jupyterlab", specifier = ">=4.5.3" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "numpy", specifier = ">=2.4.2" },
     { name = "pandas", specifier = ">=3.0.0" },
