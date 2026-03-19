@@ -20,12 +20,14 @@ This skill automates the creation of comprehensive technical reports in the Typs
         *   **Markdown Cells:** Directly include the `source` content, converting markdown headings (e.g., `# Header`) to Typst headings (e.g., `= Header`).
         *   **Code Cells:**
             *   Generate a suitable subheading (e.g., "Data Loading and Preprocessing", "Model Definition", "Experiment Execution") and a concise description of the code's purpose based on its `source` code and any preceding markdown cell context.
+            *   **Crucially, DO NOT include the code cell for the figure id generator function.** This function is a utility and not part of the core logic to be reported.
             *   Format the `source` code using `#codly`.
             *   **Outputs:**
                 *   If `stream` output is present, format its `content` using `#codly(header: [*Result*], number-format: none)`.
                 *   If `image/png` output is present (`filename`), include it using `#figure` and generate a descriptive caption. Prioritize `output.plot_title_from_source` if available, otherwise, infer from the code's likely purpose (e.g., "Impurity Plot", "Accuracy Curves", "Generated Plot").
                 *   Generate point-wise "Observations" for any `stream` output or `image/png` plot, summarizing key findings or visual insights.
     *   **Conclusion:** Generate a comprehensive "Conclusion" section (`== Conclusion`) at the end of the report in a *pointwise fashion*. This should summarize the key findings, overall results, and important observations from the entire Jupyter Notebook analysis. Avoid generic placeholders; actively synthesize information from the processed cells.
+    *   **Crucially, when creating the report, DO NOT include any text/interpretations from any active chat session/memory; ONLY write contents solely from the notebook contents.**
 3.  **Write Final Typst File:** Assemble all the generated Typst content and write it to the specified output file (defaulting to `main.typ` in the same directory as the notebook).
 4.  **Compile to PDF:** Execute the `typst compile` command to generate the PDF report.
     *   Default output filename: `report.pdf`
@@ -100,6 +102,7 @@ Construct the report preamble using the extracted `report_title` and `assignment
 #### Code Cells
 
 -   **Generate Subheading and Description:** Based on the `cell.source` code, generate a suitable subheading (e.g., "Data Loading and Preprocessing", "Model Definition", "Experiment Execution") and a brief descriptive paragraph explaining the code's purpose. Consider the overall flow of the notebook.
+-   **Crucially, DO NOT include the code cell for the figure id generator function.** This function is a utility and not part of the core logic to be reported.
 -   **Source Code Embedding Rules:**
     - **No Print Statements:** Do not embed lines containing `print()` statements.
     - **Constructor Placeholder:** Do not include a class's `__init__()` if it only contains assignment of member variables. Instead, use this placeholder:
@@ -135,6 +138,8 @@ Construct the report preamble using the extracted `report_title` and `assignment
 ### 3. Conclusion (LLM's Task)
 
 Generate a comprehensive "Conclusion" section (`== Conclusion`) at the end of the report in a *pointwise fashion*. This should summarize the key findings, overall results, and important observations from the entire Jupyter Notebook analysis. Avoid generic placeholders; actively synthesize information from the processed cells.
+
+**Crucially, when creating the report, DO NOT include any text/interpretations from any active chat session/memory; ONLY write contents solely from the notebook contents.**
 
 ## Example Usage by User
 

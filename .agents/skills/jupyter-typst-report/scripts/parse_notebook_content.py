@@ -23,7 +23,7 @@ def parse_ipynb_title(notebook_content):
     return "Untitled Report", "X"
 
 
-def parse_notebook_content(ipynb_path):
+def parse_notebook_content(ipynb_path: str):
     """
     Parses a Jupyter Notebook file and extracts structured content in JSON format.
     """

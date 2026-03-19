@@ -13,7 +13,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "jupyterlab>=4.5.3",
     "datalayer-pycrdt>=0.12.17",
     "jupyter-collaboration>=4.2.1",
     "jupyter-mcp-tools>=0.1.6",
