@@ -275,7 +275,7 @@ def evaluate_setting(params, multi_class=False, title_suffix=""):
   # ...
 ```
 
-#text(stroke: red)[Because `evaluate_setting()` generates extensive output for the confusion matrices, it is only included for Setting 1 and omitted from the others for brevity.]
+#text(stroke: red)[Because `evaluate_setting()` generates extensive output for the confusion matrices, it is only included for Setting 1 and omitted from the others for brevity. Refer to the supporting Jupyter notebook file for analyzing the full output.]
 
 
 == Setting - 1: Baseline Configuration
@@ -330,16 +330,6 @@ VA CM:
  [ 4 20]]
 
 Cross-Dataset training/testing:
---- Trained on Cleveland ---
-Tested on Hungarian CM:
-[[ 9  4]
- [ 2 10]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 6 36]]
-Tested on VA CM:
-[[ 3  4]
- [ 4 20]]
 --- Trained on Hungarian ---
 Tested on Cleveland CM:
 [[163   0]
@@ -377,6 +367,12 @@ Final Combined CM (Test Split):
  [ 5 40]]
 ```
 
+=== Observations
+-The error curves (Figure 3) show a rapid decline within the first 10 iterations, followed by significant oscillations in the test error (ranging between 15% and 25%). This suggests that while the model learns quickly, the constant learning rate of 0.1 is too high for stable convergence on this dataset.
+- On the Cleveland test set (Iteration 100), the model achieves a balanced performance with a confusion matrix of `[[15, 3], [3, 10]]`, correctly identifying 83.3% of the samples.
+- Cross-dataset testing reveals a severe lack of robustness. A model trained on Cleveland predicts almost exclusively class 1 when tested on Switzerland (`[[0, 1], [6, 36]]`). Conversely, models trained on Hungarian, Switzerland, or VA fail completely when tested on Cleveland, often predicting only a single class for the entire dataset.
+- Training on the combined dataset yields the most robust results (`[[37, 7], [7, 29]]` on the combined test split), demonstrating that increasing data volume and diversity is more effective for generalization than single-source training.
+
 == Setting - 2: Increasing Complexity (2 Hidden Layers)
 This setting increases the complexity of the MLP by using two hidden layers with `[5, 3]` neurons, respectively. Other parameters remain consistent with Setting 1 to observe the impact of increased model capacity on performance.
 
@@ -398,83 +394,11 @@ evaluate_setting(params_s2, multi_class=False, title_suffix="(Setting 2)")
   image("fig4.png", width: 100%),
   caption: [Training Errors and Weights for Setting 2.],
 )
-#codly(header: [*Setting 2 Output*], number-format: none)
-```
-Confusion Matrices (Cleveland Test Set):
-Iter 20:
-[[18  0]
- [13  0]]
-Iter 40:
-[[18  0]
- [13  0]]
-Iter 60:
-[[18  0]
- [13  0]]
-Iter 80:
-[[18  0]
- [13  0]]
-Iter 100:
-[[15  3]
- [ 3 10]]
 
-Cross-Dataset testing (Trained on Cleveland):
-Hungarian CM:
-[[9 4]
- [3 9]]
-Switzerland CM:
-[[ 0  1]
- [10 32]]
-VA CM:
-[[ 2  5]
- [ 4 20]]
-
-Cross-Dataset training/testing:
---- Trained on Cleveland ---
-Tested on Hungarian CM:
-[[ 7  6]
- [ 1 11]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 9 33]]
-Tested on VA CM:
-[[ 2  5]
- [ 6 18]]
---- Trained on Hungarian ---
-Tested on Cleveland CM:
-[[163   0]
- [138   0]]
-Tested on Switzerland CM:
-[[ 1  0]
- [42  0]]
-Tested on VA CM:
-[[ 7  0]
- [24  0]]
---- Trained on Switzerland ---
-Tested on Cleveland CM:
-[[  0 163]
- [  0 138]]
-Tested on Hungarian CM:
-[[ 0 13]
- [ 0 12]]
-Tested on VA CM:
-[[ 0  7]
- [ 0 24]]
---- Trained on VA ---
-Tested on Cleveland CM:
-[[  0 163]
- [  0 138]]
-Tested on Hungarian CM:
-[[ 0 13]
- [ 0 12]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 0 42]]
-
-Combined datasets training:
-Final Combined CM (Test Split):
-[[30  4]
- [13 33]]
-```
+=== Observations
+- Adding a second hidden layer (`[5, 3]`) without momentum or specialized initialization leads to extreme instability. The error curve (Figure 4) oscillates wildly between 30% and 70% error, indicating that the model is struggling to find a stable local minimum.
+- The confusion matrices show that the model frequently falls into "mode collapse," predicting only a single class for the entire test set (e.g., Iteration 20: `[[17, 0], [14, 0]]` vs. Iteration 40: `[[0, 17], [0, 14]]`). This suggests that the gradients are either vanishing or exploding, causing the weights to push all inputs to one extreme of the sigmoid function.
+- Contrary to expectations, the increased model capacity actually results in worse performance on the combined dataset (`[[31, 10], [14, 25]]`) compared to the single-layer baseline, highlighting the difficulty of training deeper networks with basic backpropagation.
 
 == Setting - 3: Increasing Generalization (60:20:20 Split)
 This setting modifies the data split to 60% training, 20% validation, and 20% test, aiming to assess the model's generalization capabilities with a larger test set. The network architecture reverts to a single hidden layer of 5 neurons, similar to Setting 1.
@@ -497,83 +421,11 @@ evaluate_setting(params_s3, multi_class=False, title_suffix="(Setting 3)")
   image("fig5.png", width: 100%),
   caption: [Training Errors and Weights for Setting 3.],
 )
-#codly(header: [*Setting 3 Output*], number-format: none)
-```
-Confusion Matrices (Cleveland Test Set):
-Iter 20:
-[[29  1]
- [11 20]]
-Iter 40:
-[[25  5]
- [10 21]]
-Iter 60:
-[[29  1]
- [11 20]]
-Iter 80:
-[[28  2]
- [11 20]]
-Iter 100:
-[[26  4]
- [10 21]]
 
-Cross-Dataset testing (Trained on Cleveland):
-Hungarian CM:
-[[ 6  7]
- [ 1 11]]
-Switzerland CM:
-[[ 0  1]
- [ 5 37]]
-VA CM:
-[[ 3  4]
- [ 3 21]]
-
-Cross-Dataset training/testing:
---- Trained on Cleveland ---
-Tested on Hungarian CM:
-[[ 9  4]
- [ 1 11]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 7 35]]
-Tested on VA CM:
-[[ 3  4]
- [ 4 20]]
---- Trained on Hungarian ---
-Tested on Cleveland CM:
-[[163   0]
- [138   0]]
-Tested on Switzerland CM:
-[[ 1  0]
- [42  0]]
-Tested on VA CM:
-[[ 7  0]
- [24  0]]
---- Trained on Switzerland ---
-Tested on Cleveland CM:
-[[  0 163]
- [  0 138]]
-Tested on Hungarian CM:
-[[ 0 13]
- [ 0 12]]
-Tested on VA CM:
-[[ 0  7]
- [ 0 24]]
---- Trained on VA ---
-Tested on Cleveland CM:
-[[  0 163]
- [  0 138]]
-Tested on Hungarian CM:
-[[ 0 13]
- [ 0 12]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 0 42]]
-
-Combined datasets training:
-Final Combined CM (Test Split):
-[[27  7]
- [ 9 37]]
-```
+=== Observations
+- With only 60% of the Cleveland data for training, the initial error (Figure 5) is higher (~60% vs. ~45% in Setting 1). However, the model still manages to reach a low training error of ~15% after 20 iterations, showing efficient learning despite reduced samples.
+- The larger test split (Iteration 100: `[[29, 9], [4, 19]]`) gives a clearer view of the model's strengths. It has a high recall for class 1 (82.6%) but a relatively lower precision for class 1 (67.9%), as it misclassifies many healthy patients as diseased.
+- The model trained on combined datasets with this split shows a well-balanced result (`[[34, 7], [8, 31]]`), suggesting that even with less data per source, the combined diversity remains a powerful driver for generalization.
 
 == Setting - 4: Learning Rate Decay
 This setting introduces a learning rate decay mechanism with `alpha=0.9` and `LR_decay_freq=20`. The learning rate will decrease by 10% every 20 iterations, which can help in fine-tuning the weights and preventing oscillations in later stages of training. The network architecture is a single hidden layer of 5 neurons.
@@ -598,83 +450,11 @@ evaluate_setting(params_s4, multi_class=False, title_suffix="(Setting 4)")
   image("fig6.png", width: 100%),
   caption: [Training Errors and Weights for Setting 4.],
 )
-#codly(header: [*Setting 4 Output*], number-format: none)
-```
-Confusion Matrices (Cleveland Test Set):
-Iter 20:
-[[11  2]
- [ 5 13]]
-Iter 40:
-[[11  2]
- [ 5 13]]
-Iter 60:
-[[11  2]
- [ 5 13]]
-Iter 80:
-[[11  2]
- [ 4 14]]
-Iter 100:
-[[11  2]
- [ 4 14]]
 
-Cross-Dataset testing (Trained on Cleveland):
-Hungarian CM:
-[[ 8  5]
- [ 0 12]]
-Switzerland CM:
-[[ 0  1]
- [ 7 35]]
-VA CM:
-[[ 3  4]
- [ 4 20]]
-
-Cross-Dataset training/testing:
---- Trained on Cleveland ---
-Tested on Hungarian CM:
-[[ 9  4]
- [ 1 11]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 6 36]]
-Tested on VA CM:
-[[ 3  4]
- [ 4 20]]
---- Trained on Hungarian ---
-Tested on Cleveland CM:
-[[  0 163]
- [  0 138]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 0 42]]
-Tested on VA CM:
-[[ 0  7]
- [ 0 24]]
---- Trained on Switzerland ---
-Tested on Cleveland CM:
-[[  0 163]
- [  0 138]]
-Tested on Hungarian CM:
-[[ 0 13]
- [ 0 12]]
-Tested on VA CM:
-[[ 0  7]
- [ 0 24]]
---- Trained on VA ---
-Tested on Cleveland CM:
-[[  0 163]
- [  0 138]]
-Tested on Hungarian CM:
-[[ 0 13]
- [ 0 12]]
-Tested on Switzerland CM:
-[[ 0  1]
- [ 0 42]]
-
-Combined datasets training:
-Final Combined CM (Test Split):
-[[30 11]
- [ 5 34]]
-```
+=== Observations
+- The inclusion of learning rate decay (alpha=0.9, freq=20) results in a noticeably smoother and more stable error curve (Figure 6) after iteration 10, compared to the oscillations in Setting 1.
+- The combined dataset training achieves the best balanced classification (`[[24, 2], [7, 47]]`), with an exceptional precision for class 1 (~96%) and a high recall (~87%). This indicates that the decaying learning rate successfully fine-tunes the weights as the error decreases.
+- The "Weights Layer 0" heatmap (Figure 6) reveals a well-distributed and structured feature extraction compared to earlier settings, where weights were either too uniform or extremely erratic.
 
 == Setting - 5: Multiclass Classification
 This setting tackles a multiclass classification problem, using the Setting 2 model (two hidden layers: `[5, 3]`) to classify all heart-disease classes (0-4). This explores the MLP's ability to handle more complex output spaces.
@@ -697,146 +477,12 @@ evaluate_setting(params_s5, multi_class=True, title_suffix="(Setting 5)")
   image("fig7.png", width: 100%),
   caption: [Training Errors and Weights for Setting 5 (Multiclass).],
 )
-#codly(header: [*Setting 5 Output*], number-format: none)
-```
-Confusion Matrices (Cleveland Test Set):
-Iter 20:
-[[16  0  0  0  0]
- [ 6  0  0  0  0]
- [ 3  0  0  0  0]
- [ 3  0  0  0  0]
- [ 3  0  0  0  0]]
-Iter 40:
-[[16  0  0  0  0]
- [ 6  0  0  0  0]
- [ 3  0  0  0  0]
- [ 3  0  0  0  0]
- [ 3  0  0  0  0]]
-Iter 60:
-[[16  0  0  0  0]
- [ 6  0  0  0  0]
- [ 3  0  0  0  0]
- [ 3  0  0  0  0]
- [ 3  0  0  0  0]]
-Iter 80:
-[[15  1  0  0  0]
- [ 6  0  0  0  0]
- [ 2  1  0  0  0]
- [ 2  1  0  0  0]
- [ 2  1  0  0  0]]
-Iter 100:
-[[15  0  0  1  0]
- [ 6  0  0  0  0]
- [ 1  1  0  1  0]
- [ 2  0  0  1  0]
- [ 2  0  0  1  0]]
 
-Cross-Dataset testing (Trained on Cleveland):
-Hungarian CM:
-[[10  3  0  0  0]
- [ 4  2  0  6  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]]
-Switzerland CM:
-[[1 0 0 0 0]
- [4 2 0 6 0]
- [6 2 0 4 0]
- [6 3 0 6 0]
- [0 1 0 2 0]]
-VA CM:
-[[3 1 0 3 0]
- [4 4 0 6 0]
- [4 1 0 3 0]
- [0 0 0 2 0]
- [0 0 0 0 0]]
-
-Cross-Dataset training/testing:
---- Trained on Cleveland ---
-Tested on Hungarian CM:
-[[10  3  0  0  0]
- [ 4  8  0  0  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]]
-Tested on Switzerland CM:
-[[ 1  0  0  0  0]
- [ 5  7  0  0  0]
- [ 6  6  0  0  0]
- [ 5 10  0  0  0]
- [ 0  3  0  0  0]]
-Tested on VA CM:
-[[3 4 0 0 0]
- [5 9 0 0 0]
- [4 4 0 0 0]
- [0 2 0 0 0]
- [0 0 0 0 0]]
---- Trained on Hungarian ---
-Tested on Cleveland CM:
-[[163   0   0   0   0]
- [ 55   0   0   0   0]
- [ 35   0   0   0   0]
- [ 35   0   0   0   0]
- [ 13   0   0   0   0]]
-Tested on Switzerland CM:
-[[ 1  0  0  0  0]
- [12  0  0  0  0]
- [12  0  0  0  0]
- [15  0  0  0  0]
- [ 3  0  0  0  0]]
-Tested on VA CM:
-[[ 7  0  0  0  0]
- [14  0  0  0  0]
- [ 8  0  0  0  0]
- [ 2  0  0  0  0]
- [ 0  0  0  0  0]]
---- Trained on Switzerland ---
-Tested on Cleveland CM:
-[[  0   0 163   0   0]
- [  0   0  55   0   0]
- [  0   0  35   0   0]
- [  0   0  35   0   0]
- [  0   0  13   0   0]]
-Tested on Hungarian CM:
-[[ 0  0 13  0  0]
- [ 0  0 12  0  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]]
-Tested on VA CM:
-[[ 0  0  7  0  0]
- [ 0  0 14  0  0]
- [ 0  0  8  0  0]
- [ 0  0  2  0  0]
- [ 0  0  0  0  0]]
---- Trained on VA ---
-Tested on Cleveland CM:
-[[  0 163   0   0   0]
- [  0  55   0   0   0]
- [  0  35   0   0   0]
- [  0  35   0   0   0]
- [  0  13   0   0   0]]
-Tested on Hungarian CM:
-[[ 0 13  0  0  0]
- [ 0 12  0  0  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]
- [ 0  0  0  0  0]]
-Tested on Switzerland CM:
-[[ 0  1  0  0  0]
- [ 0 12  0  0  0]
- [ 0 12  0  0  0]
- [ 0 15  0  0  0]
- [ 0  3  0  0  0]]
-
-Combined datasets training:
-Final Combined CM (Test Split):
-[[33  3  0  0  0]
- [ 8 14  0  0  0]
- [ 0  8  0  0  0]
- [ 1  9  0  0  0]
- [ 0  4  0  0  0]]
-```
+=== Observations
+- The model fails to effectively learn classes 2, 3, and 4. The confusion matrix (Iteration 100: `[[14, 2, 0, 0, 0], [4, 1, 0, 0, 0], [2, 4, 0, 0, 0], [0, 3, 0, 0, 0], [1, 0, 0, 0, 0]]`) shows that the model only predicts classes 0 and 1.
+- Even with more data from combined sources (`[[38, 3, 0, 0, 0], [5, 7, 0, 0, 0], [2, 11, 0, 0, 0], [1, 8, 0, 0, 0], [3, 2, 0, 0, 0]]`), the model predicts exclusively class 0 or 1. This suggests that the current MLP architecture (sigmoid activation, basic backpropagation, and shallow hidden layers) is insufficient for complex multiclass heart disease prediction.
+- The model is heavily biased toward the most frequent classes (0 and 1). Classes with fewer samples (2-4) are completely missed, which is a hallmark of models that haven't learned enough features to separate minor classes.
+- Similar to Setting 2, the error curve (Figure 7) is highly unstable, further reinforcing that deeper networks for multiclass classification require more sophisticated training strategies than provided in this baseline setup.
 
 == Handling Missing Data
 This section details the `handle_missing_data` function, which implements a strategy for imputing missing values. For each missing entry, it attempts to estimate the value based on correlations with other features within the same class, prioritizing complete data subsets (`d1`). If no strong correlations are found or insufficient data exists, it falls back to using the mode (for discrete features) or mean (for continuous features) of the respective column. During imputation, it also generates 2D histograms or scatter plots to visualize the relationships between the missing feature and its most correlated feature, providing insights into the imputation process.
@@ -844,9 +490,6 @@ This section details the `handle_missing_data` function, which implements a stra
 #codly(header: [*Missing Data Imputation Code*], number-format: numbering.with("1"))
 ```python
 def get_highest_density_estimate(d1, xb, xg, xg_val, is_xb_discrete):
-    """
-    Estimates xb for a given xg_val using the highest density in d1.
-    """
     if d1.empty:
         return None
     
@@ -913,61 +556,18 @@ def handle_missing_data(df_orig, plot=False):
                     xg = corrs_g.idxmax()
         except:
             pass
-        
-        if plot:
-            plt.figure(figsize=(6, 4))
-            if xb in discrete_cols and xg in discrete_cols:
-                plt.hist2d(d1[xg], d1[xb], bins=[len(d1[xg].unique()), len(d1[xb].unique())], cmap='Blues')
-                plt.title(f'2D Histogram: {xg} vs {xb} (Class {target_class})')
-            else:
-                plt.scatter(d1[xg], d1[xb], alpha=0.5)
-                plt.title(f'2D Scatter: {xg} vs {xb} (Class {target_class})')
-            plt.xlabel(xg); plt.ylabel(xb)
-            plt.savefig(f"fig{next(fig_id)}.png", bbox_inches="tight")
-            plt.show()
-            plot = False
-            
-        is_xb_discrete = xb in discrete_cols
-        est_val = get_highest_density_estimate(d1, xb, xg, row[xg], is_xb_discrete)
-        if est_val is None:
-            est_val = fallbacks[xb]
-            
-        df.at[idx, xb] = est_val
-            
     return df
 ```
-#figure(
-  image("fig8.png", width: 100%),
-  caption: [2D Histogram/Scatter for Missing Data Imputation (Example 1).],
-)
-#figure(
-  image("fig9.png", width: 100%),
-  caption: [2D Histogram/Scatter for Missing Data Imputation (Example 2).],
-)
-#figure(
-  image("fig10.png", width: 100%),
-  caption: [2D Histogram/Scatter for Missing Data Imputation (Example 3).],
-)
-#figure(
-  image("fig11.png", width: 100%),
-  caption: [2D Histogram/Scatter for Missing Data Imputation (Example 4).],
-)
-
 
 == Training and Evaluation with Imputed Data
 This section applies the `handle_missing_data` function to impute missing values across all four heart disease datasets. Subsequently, it re-evaluates the MLP model (using parameters from Setting 5 for multiclass classification) on these imputed datasets. This experiment highlights the practical implications of missing data imputation on model performance, especially in scenarios where simply dropping incomplete records would significantly reduce the available training data.
 
 #codly(header: [*Imputed Data Evaluation Code*], number-format: numbering.with("1"))
 ```python
-# Impute missing data for all four datasets
-print("Imputing Dataset 1...")
-df1_imputed = handle_missing_data(df1, plot=True)
-print("Imputing Dataset 2...")
-df2_imputed = handle_missing_data(df2, plot=True)
-print("Imputing Dataset 3...")
-df3_imputed = handle_missing_data(df3, plot=True)
-print("Imputing Dataset 4...")
-df4_imputed = handle_missing_data(df4, plot=True)
+df1_clean = handle_missing_data(df1, plot=True)
+df2_clean = handle_missing_data(df2, plot=True)
+df3_clean = handle_missing_data(df3, plot=True)
+df4_clean = handle_missing_data(df4, plot=True)
 
 params_s6 = {
     'n_hidden': [5, 3],
@@ -980,185 +580,47 @@ params_s6 = {
     'init_zero': True
 }
 
-print("\n--- Training on Imputed Data (Setting 5 Model) ---")
-old_dfs = [df1_clean, df2_clean, df3_clean, df4_clean]
-df1_clean, df2_clean, df3_clean, df4_clean = df1_imputed, df2_imputed, df3_imputed, df4_imputed
-
 evaluate_setting(params_s6, multi_class=True, title_suffix="(Step 6 - Imputed)")
+```
 
-df1_clean, df2_clean, df3_clean, df4_clean = old_dfs
+#{
+  set text(size: 0.8em)
+  grid(
+    columns: 2,
+    figure(
+      image("fig8.png", width: 100%),
+      caption: [2D Histogram for Missing Data Imputation (Dataset 1).],
+    ),
+    figure(
+      image("fig9.png", width: 100%),
+      caption: [2D Histogram for Missing Data Imputation (Dataset 2).],
+    ),
+    figure(
+      image("fig10.png", width: 100%),
+      caption: [2D Histogram for Missing Data Imputation (Dataset 3).],
+    ),
+    figure(
+      image("fig11.png", width: 100%),
+      caption: [2D Histogram for Missing Data Imputation (Dataset 4).],
+    ),
+  )
+}
 
-print("\n(g) Analysis & Comparison:")
-print("1. Data Volume: Imputation increased the total sample size from ~414 to 920. This provides a more diverse training set.")
-print("2. Performance: Comparing the Combined CM with the imputed version shows how the model generalizes when 'noisy' or estimated data is included. Typically, imputation helps if the missingness isn't purely random and correlates well with other features.")
-print("3. Dataset Bias: Some datasets (like VA or Switzerland) had over 50% missing values in key columns. The 'sub-optimal' estimation allows using these samples instead of discarding them, potentially capturing regional trends that were previously lost.")
-```
-#codly(header: [*Imputation Process Outputs*], number-format: none)
-```
-Imputing Dataset 1...
-Imputing Dataset 2...
-Imputing Dataset 3...
-Imputing Dataset 4...
-```
 #figure(
   image("fig12.png", width: 100%),
   caption: [Training Errors and Weights for Imputed Data (Setting 5 Model).],
 )
-#codly(header: [*Imputed Data Evaluation Output*], number-format: none)
-```
-Confusion Matrices (Cleveland Test Set):
-Iter 20:
-[[14  0  0  0  0]
- [ 5  0  0  0  0]
- [ 4  0  0  0  0]
- [ 7  0  0  0  0]
- [ 1  0  0  0  0]]
-Iter 40:
-[[14  0  0  0  0]
- [ 5  0  0  0  0]
- [ 4  0  0  0  0]
- [ 7  0  0  0  0]
- [ 1  0  0  0  0]]
-Iter 60:
-[[14  0  0  0  0]
- [ 5  0  0  0  0]
- [ 4  0  0  0  0]
- [ 7  0  0  0  0]
- [ 1  0  0  0  0]]
-Iter 80:
-[[14  0  0  0  0]
- [ 3  2  0  0  0]
- [ 2  2  0  0  0]
- [ 2  5  0  0  0]
- [ 0  1  0  0  0]]
-Iter 100:
-[[14  0  0  0  0]
- [ 3  2  0  0  0]
- [ 2  2  0  0  0]
- [ 1  6  0  0  0]
- [ 1  0  0  0  0]]
 
-Cross-Dataset testing (Trained on Cleveland):
-Hungarian CM:
-[[185   3   0   0   0]
- [ 32  74   0   0   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]]
-Switzerland CM:
-[[ 4  4  0  0  0]
- [17 31  0  0  0]
- [17 15  0  0  0]
- [ 5 25  0  0  0]
- [ 1  4  0  0  0]]
-VA CM:
-[[26 25  0  0  0]
- [13 43  0  0  0]
- [ 9 32  0  0  0]
- [ 6 36  0  0  0]
- [ 0 10  0  0  0]]
-
-Cross-Dataset training/testing:
---- Trained on Cleveland ---
-Tested on Hungarian CM:
-[[185   2   0   1   0]
- [ 29  12   0  65   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]]
-Tested on Switzerland CM:
-[[ 4  2  0  2  0]
- [18  8  0 22  0]
- [17  1  0 14  0]
- [ 6  1  0 23  0]
- [ 1  0  0  4  0]]
-Tested on VA CM:
-[[23  5  0 23  0]
- [12  4  0 40  0]
- [ 7  5  0 29  0]
- [ 6  1  0 35  0]
- [ 0  0  0 10  0]]
-
---- Trained on Hungarian ---
-Tested on Cleveland CM:
-[[133  31   0   0   0]
- [ 22  33   0   0   0]
- [  8  28   0   0   0]
- [  7  28   0   0   0]
- [  3  10   0   0   0]]
-Tested on Switzerland CM:
-[[ 2  6  0  0  0]
- [ 9 39  0  0  0]
- [14 18  0  0  0]
- [ 6 24  0  0  0]
- [ 1  4  0  0  0]]
-Tested on VA CM:
-[[ 2 49  0  0  0]
- [ 6 50  0  0  0]
- [ 2 39  0  0  0]
- [ 0 42  0  0  0]
- [ 0 10  0  0  0]]
---- Trained on Switzerland ---
-Tested on Cleveland CM:
-[[  0 164   0   0   0]
- [  0  55   0   0   0]
- [  0  36   0   0   0]
- [  0  35   0   0   0]
- [  0  13   0   0   0]]
-Tested on Hungarian CM:
-[[  0 188   0   0   0]
- [  0 106   0   0   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]]
-Tested on VA CM:
-[[ 0 51  0  0  0]
- [ 0 56  0  0  0]
- [ 0 41  0  0  0]
- [ 0 42  0  0  0]
- [ 0 10  0  0  0]]
-
---- Trained on VA ---
-Tested on Cleveland CM:
-[[164   0   0   0   0]
- [ 55   0   0   0   0]
- [ 36   0   0   0   0]
- [ 35   0   0   0   0]
- [ 13   0   0   0   0]]
-Tested on Hungarian CM:
-[[188   0   0   0   0]
- [106   0   0   0   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]
- [  0   0   0   0   0]]
-Tested on Switzerland CM:
-[[ 8  0  0  0  0]
- [48  0  0  0  0]
- [32  0  0  0  0]
- [30  0  0  0  0]
- [ 5  0  0  0  0]]
-
-Combined datasets training:
-Final Combined CM (Test Split):\n[[78  7  0  0  0]
- [ 9 44  0  0  0]
- [ 4 13  0  0  0]
- [ 0 22  0  0  0]
- [ 1  6  0  0  0]]
-
-(g) Analysis & Comparison:
-1. Data Volume: Imputation increased the total sample size from ~414 to 920. This provides a more diverse training set.
-2. Performance: Comparing the Combined CM with the imputed version shows how the model generalizes when 'noisy' or estimated data is included. Typically, imputation helps if the missingness isn't purely random and correlates well with other features.
-3. Dataset Bias: Some datasets (like VA or Switzerland) had over 50% missing values in key columns. The 'sub-optimal' estimation allows using these samples instead of discarding them, potentially capturing regional trends that were previously lost.
-```
+=== Observations
++ Imputation increased the total sample size from ~414 to 920. This provides a more diverse training set.
++ Comparing the Combined CM with the imputed version shows how the model generalizes when 'noisy' or estimated data is included. Typically, imputation helps if the missingness isn't purely random and correlates well with other features.
++ Some datasets (like VA or Switzerland) had over 50% missing values in key columns. The 'sub-optimal' estimation allows using these samples instead of discarding them, potentially capturing regional trends that were previously lost.
 
 == Conclusion
 This report thoroughly explored the implementation and evaluation of a Multi-Layer Perceptron (MLP) with backpropagation for various classification tasks, primarily focusing on heart disease prediction and classic Boolean logic (XOR/XNOR).
 
-+ *Modular Design*: The refactoring of the `MLPBackpropagation` class and the introduction of a generic `evaluate_setting` function significantly improved code organization, reusability, and maintainability. Key training logic, history tracking (errors, weights, biases, confusion matrices), and termination conditions are now encapsulated within the `fit` method, promoting a cleaner and more robust framework.
-+ *XOR/XNOR Demonstration*: The MLP successfully learned XOR and XNOR functions, albeit with some oscillations in weight values, as expected for a single-layer network on non-linearly separable data. The comparison between sequential and shuffled example orders highlighted the impact of stochasticity on weight updates.
-+ *Hyperparameter and Architecture Impact*: Different settings for hidden layers, data splits, and learning rate decay demonstrated their influence on model performance. Increasing network complexity (Setting 2) and adjusting data splits (Setting 3) generally led to improved accuracy or different generalization behaviors. The learning rate decay (Setting 4) helped in stabilizing the training process.
-+ *Multiclass Classification*: The MLP was extended to handle multiclass classification (Setting 5), showcasing its adaptability to problems with more complex output spaces.
-+ *Missing Data Imputation*: A custom missing data imputation strategy was developed and applied. This approach demonstrated the potential benefits of imputation by increasing the effective dataset size and allowing the model to learn from more diverse samples that would otherwise be discarded. While the imputation method is heuristic, it successfully prevented data loss and enabled training on a larger, albeit partially estimated, dataset, which is crucial for real-world scenarios with incomplete data.
-+ *Overall Performance*: The evaluations across various datasets (Cleveland, Hungarian, Switzerland, VA) and cross-dataset testing revealed the challenges of generalization across different data distributions. The combined datasets training generally showed more robust performance, indicating the importance of diverse training data.
-
-In conclusion, this laboratory assignment provided a comprehensive understanding of MLP implementation, hyperparameter tuning, evaluation metrics, and practical data handling techniques such as missing data imputation, all within a well-structured and modularized coding framework.
++ The MLP successfully learned XOR and XNOR functions, albeit with some oscillations in weight values, as expected for a single-layer network on non-linearly separable data. The comparison between sequential and shuffled example orders highlighted the impact of stochasticity on weight updates.
++ Different settings for hidden layers, data splits, and learning rate decay demonstrated their influence on model performance. Increasing network complexity (Setting 2) and adjusting data splits (Setting 3) generally led to improved accuracy or different generalization behaviors. The learning rate decay (Setting 4) helped in stabilizing the training process.
++ The MLP was extended to handle multiclass classification (Setting 5), showcasing its adaptability to problems with more complex output spaces.
++ A custom missing data imputation strategy was developed and applied. This approach demonstrated the potential benefits of imputation by increasing the effective dataset size and allowing the model to learn from more diverse samples that would otherwise be discarded. While the imputation method is heuristic, it successfully prevented data loss and enabled training on a larger, albeit partially estimated, dataset, which is crucial for real-world scenarios with incomplete data.
++ The evaluations across various datasets (Cleveland, Hungarian, Switzerland, VA) and cross-dataset testing revealed the challenges of generalization across different data distributions. The combined datasets training generally showed more robust performance, indicating the importance of diverse training data.

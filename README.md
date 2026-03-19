@@ -42,6 +42,7 @@ This serves as my dumping ground for everything I have done throughout this cour
 | Support Vector Machines                    | [Week 3](./week03/)  |
 | Decision Trees                             | [Week 4](./week04/)  |
 | Random Forests                             | [Week 5](./week05/)  |
+| Artificial Neural Networks                 | [Week 6](./week06/)  |
 
 ## Connecting Jupyter Notebook With Your AI
 Jupyter Lab can be integrated with your AI model of choice using the [MCP protocol](https://modelcontextprotocol.io/docs/getting-started/intro). Simply start Jupyter Lab with `just` using
