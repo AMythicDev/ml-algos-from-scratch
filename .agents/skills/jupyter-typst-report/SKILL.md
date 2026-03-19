@@ -49,6 +49,18 @@ This skill automates the creation of comprehensive technical reports in the Typs
 - **Writing Style:**
     - Always add a new line separation for headings preceded by paragraphs or `#codly` declarations/code blocks following paragraphs.
     - Always prefer using the auto-numbered `+` for ordered lists rather than manually writing numbers.
+    - **Observations Section:**
+        - After any cell that outputs stdout text or a matplotlib figure, add an Observations section (`== Observations`) **after all** the outputs and figures in that cell. This section should highlight the key important points that can be concluded from the stdout text or matplotlib graph specific to that section.
+        - **Paragraph-Style Writing:** When writing observation points, write text in a continuous paragraph fashion rather than the typical bold-term format. Instead of:
+            ```typ
+            **Some Bold Term Highlighting the Point**: The rest of the paragraph describing the body
+            ```
+            Prefer writing in this fashion:
+            ```typ
+            This is a continuous paragraph of text which will go like this.
+            And it will continue to further lines as needed to fully describe the observations.
+            ```
+        - Maintain flow and coherence within each observation paragraph.
 
 ### 1. Preamble
 
@@ -66,27 +78,32 @@ Construct the report preamble using the extracted `report_title` and `assignment
 
 #codly(languages: codly-languages, display-icon: false, display-name: false, breakable: true)
 
+#{
+  show heading: none
+  heading[Cover]
+}
+
 #align(center + horizon)[
-  == Department of Electrical Engineering \ \
-  == Indian Institute of Technology, Kharagpur \ \
-  == Algorithms, AI and ML Laboratory (EE22202) \ \
-  == Spring, 2025-26 \
-  \
-  = Report <assignment_num>: <report_title>
-  \
-  == Name: Arijit Dey \
-  == Roll No: 24IE10001
+  #text(size: 1.2em, weight: "bold")[
+    Department of Electrical Engineering \ \ \
+    Indian Institute of Technology, Kharagpur \ \ \
+    Algorithms, AI and ML Laboratory (EE22202) \ \ \
+    Spring, 2025-26 \ \
+  ]
+
+  #text(size: 1.4em, weight: "bold")[
+    Report <assignment_num>: <report_title>
+  ]
+
+  #text(size: 1.2em, weight: "bold")[
+    Name: Arijit Dey \ \
+    Roll No: 24IE10001
+  ]
 ]
 
 #pagebreak()
 
 #align(center)[= <report_title_main_part>]
-
-#set heading(numbering: (..nums) => {
-  if nums.pos().len() > 1 {
-    numbering("1.1", ..nums.pos().slice(1, none))
-  }
-})
 ```
 `<report_title_main_part>` refers to the part of `report_title` after the colon.
 
