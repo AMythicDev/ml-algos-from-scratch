@@ -129,6 +129,7 @@ $
 
 #table(
   columns: 3,
+  align: center,
   table.header([], [*Class 1*], [*Class 2*]),
   inset: 10pt,
   [*Class 1*], [Class 1 correctly classified as class 1], [Class 1 wrongly classified as class 2],
@@ -368,7 +369,9 @@ Final Combined CM (Test Split):
 ```
 
 === Observations
--The error curves (Figure 3) show a rapid decline within the first 10 iterations, followed by significant oscillations in the test error (ranging between 15% and 25%). This suggests that while the model learns quickly, the constant learning rate of 0.1 is too high for stable convergence on this dataset.
+- Initializing zero weights between the input layer and the first hidden layer causes every neuron in a hidden layer receives the same input and computes the exact same activation during the forward pass. During backpropagation, because the neurons are symmetric and the error is propagated through identical weights, each neuron receives the same gradient update.
+- Hence the weights graph for layer 0 shows horizontal bands, indicating all weights for any given neuron have identical values.
+- The error curves (Figure 3) show a rapid decline within the first 10 iterations, followed by significant oscillations in the test error (ranging between 15% and 25%). This suggests that while the model learns quickly, the constant learning rate of 0.1 is too high for stable convergence on this dataset.
 - On the Cleveland test set (Iteration 100), the model achieves a balanced performance with a confusion matrix of `[[15, 3], [3, 10]]`, correctly identifying 83.3% of the samples.
 - Cross-dataset testing reveals a severe lack of robustness. A model trained on Cleveland predicts almost exclusively class 1 when tested on Switzerland (`[[0, 1], [6, 36]]`). Conversely, models trained on Hungarian, Switzerland, or VA fail completely when tested on Cleveland, often predicting only a single class for the entire dataset.
 - Training on the combined dataset yields the most robust results (`[[37, 7], [7, 29]]` on the combined test split), demonstrating that increasing data volume and diversity is more effective for generalization than single-source training.
