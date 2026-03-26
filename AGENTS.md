@@ -9,8 +9,8 @@ This repository contains scratch implementations of machine learning algorithms.
   - Use `jupyter_insert_cell` or `jupyter_overwrite_cell_source` for modifications.
   - Always execute cells after modification to validate syntax and logic.
 - **Dependency Management**: Before importing any package, check `pyproject.toml` under `project.dependencies`. **DO NOT** use or install any packages not listed there.
-  - Allowed: `numpy`, `pandas`, `matplotlib`, `cvxpy`.
-  - Forbidden: `scikit-learn`, `tensorflow`, `pytorch` (unless specifically added to `pyproject.toml`).
+  - Allowed: `numpy`, `pandas`, `matplotlib`, `cvxpy`, `pytorch`.
+  - Forbidden: `scikit-learn`, `tensorflow` (unless specifically added to `pyproject.toml`).
 - **Cell Structure**: When implementing a new feature or solving a problem:
   1. Put all definitions (classes, functions, constants) in a single implementation cell.
   2. Put the application, usage, and validation code in one or more **subsequent** cells.
