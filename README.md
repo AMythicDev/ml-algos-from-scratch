@@ -35,14 +35,15 @@ This serves as my dumping ground for everything I have done throughout this cour
 
 ## List of Topics
 
-| Topic                                      | Folder Link          |
-| ------------------------------------------ | -------------------- |
-| Gradient-based Algorithms for Optimization | [Week 1](./week01/)  |
-| Regression                                 | [Week 2](./week02/)  |
-| Support Vector Machines                    | [Week 3](./week03/)  |
-| Decision Trees                             | [Week 4](./week04/)  |
-| Random Forests                             | [Week 5](./week05/)  |
-| Artificial Neural Networks                 | [Week 6](./week06/)  |
+| Topic                                                            | Folder Link         |
+| ---------------------------------------------------------------- | ------------------- |
+| Gradient-based Algorithms for Optimization                       | [Week 1](./week01/) |
+| Regression                                                       | [Week 2](./week02/) |
+| Support Vector Machines                                          | [Week 3](./week03/) |
+| Decision Trees                                                   | [Week 4](./week04/) |
+| Random Forests                                                   | [Week 5](./week05/) |
+| Artificial Neural Networks                                       | [Week 6](./week06/) |
+| Fashion MNIST Classification using Convolutional Neural Networks | [Week 9](./week09/) |
 
 ## Connecting Jupyter Notebook With Your AI
 Jupyter Lab can be integrated with your AI model of choice using the [MCP protocol](https://modelcontextprotocol.io/docs/getting-started/intro). Simply start Jupyter Lab with `just` using
