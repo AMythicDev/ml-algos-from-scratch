@@ -24,7 +24,7 @@
 
   #text(size: 1.4em, weight: "bold")[
     Report 09: Fashion MNIST Classification using Convolutional Neural Networks
-  ]
+  ] \ \
 
   #text(size: 1.2em, weight: "bold")[
     Name: Arijit Dey \ \
@@ -37,8 +37,7 @@
 #align(center)[= Fashion MNIST Classification using Convolutional Neural Networks]
 
 == Data Loading and Preprocessing
-
-Here we load the FashionMNIST dataset, and prepare the data loaders for training, validation, and testing. A 20% split of the training data is used for validation. The device is set to 'cuda' if available, otherwise 'cpu'.
+Here we load the FashionMNIST dataset, and prepare the data loaders for training, validation, and testing. A 20% split of the training data is used for validation. The device is set to `cuda` if a CUDA-enabled GPU is detected, otherwise it is set to `cpu` #footnote[This experiment was performed on a T4 GPU].
 
 #codly(header: [*Data Transformation and Loading*], number-format: numbering.with("1"))
 ```python
@@ -46,17 +45,14 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.5,), (0.5,))
 ])
-train_dataset = datasets.FashionMNIST("F_MNIST_data", download = True, train = True, transform = transform )
-test_dataset = datasets.FashionMNIST("F_MNIST_data", download = True, train = False, transform = transform )
+train_dataset = datasets.FashionMNIST("F_MNIST_data", download = True, train = True, transform = transform)
+test_dataset = datasets.FashionMNIST("F_MNIST_data", download = True, train = False, transform = transform)
 
 indices = list(range(len(train_dataset)))
 np.random.shuffle(indices)
 split = int(0.2 * len(train_dataset))
 val_ids , train_ids = indices[:split], indices[split:]
-```
 
-#codly(header: [*DataLoader Setup*], number-format: numbering.with("1"))
-```python
 train_sampler = torch.utils.data.SubsetRandomSampler(train_ids)
 val_sampler = torch.utils.data.SubsetRandomSampler(val_ids)
 
@@ -71,20 +67,19 @@ test_loader = torch.utils.data.DataLoader(
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ```
 
-#codly(header: [*Data Inspection*], number-format: numbering.with("1"))
-```python
-print("Length of train data is " + str(len(train_sampler)))
-print("Length of test data is " + str(len(test_dataset)))
-print("Length of validation data is " + str(len(val_sampler)))
-
-image, label = next(iter(train_loader))
-print(image[0].shape, label.shape)
-
-desc = ["T-shirt/top ", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle Boot"]
-print(desc[label[0].item()])
-plt.imshow(image[0].numpy().squeeze(), cmap="gray")
-```
-#codly(header: [*Result*], number-format: none)
+#grid(
+  columns: 2,
+  rows: (auto, 157pt),
+  row-gutter: 5pt,
+  align: center,
+  grid.cell(
+    colspan: 2,
+    stroke: (bottom: blue),
+    inset: 5pt,
+    [Result: Output of above cell and sample image from the FashionMNIST dataset]
+),
+  [
+#codly(header: [*Stdout*], number-format: none)
 ```
 Length of train data is 48000
 Length of test data is 10000
@@ -92,9 +87,8 @@ Length of validation data is 12000
 torch.Size([1, 28, 28]) torch.Size([128])
 Sandal
 ```
-#figure(
-  image("fig1.png", width: 80%),
-  caption: [Sample Image from FashionMNIST Dataset]
+],
+  image("fig1.png", fit: "contain", width: 100%, height: 100%),
 )
 
 == Model Definition: `BaseCNN`
@@ -131,7 +125,6 @@ class BaseCNN(nn.Module):
             self.conv_layers.append(nn.ReLU())
 
             current_size = (current_size + 2 * padding - k) // s + 1
-
             if current_size > 1:
                 self.conv_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
                 current_size = current_size // 2
@@ -496,6 +489,6 @@ The model with batch normalisation, based on the "Shallow" architecture, achieve
 +   Modifying kernel size and stride (Experiment 2) improved accuracy to 90.19%, but also led to increased overfitting as evidenced by the divergence of training and validation loss.
 +   Reducing the network's depth (Experiment 3) yielded a comparable test accuracy of 90.24% but still exhibited overfitting.
 +   Implementing dropout regularisation (Experiment 4) helped mitigate overfitting, as indicated by a smaller gap between training and validation loss, and achieved a test accuracy of 89.19%.
-+   The most significant improvement was observed with batch normalisation (Experiment 5), which, when applied to the best-performing "Shallow" architecture, resulted in the highest test accuracy of 91.13%. This indicates that batch normalisation not only enhances performance but also contributes to better model stability.
++   The most significant improvement was observed with batch normalisation (Experiment 5), which, when applied to the best-performing Shallow architecture, resulted in the highest test accuracy of 91.13%. This indicates that batch normalisation not only enhances performance but also contributes to better model stability.
 
 In conclusion, for this task, a shallower network combined with batch normalisation proved to be the most effective configuration, achieving superior generalisation performance on the Fashion MNIST dataset. This highlights the importance of regularisation techniques like batch normalisation in building robust CNN models.
