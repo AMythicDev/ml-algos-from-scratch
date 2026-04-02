@@ -44,6 +44,7 @@ This serves as my dumping ground for everything I have done throughout this cour
 | Random Forests                                                   | [Week 5](./week05/) |
 | Artificial Neural Networks                                       | [Week 6](./week06/) |
 | Fashion MNIST Classification using Convolutional Neural Networks | [Week 9](./week09/) |
+| Semantic Image Segmentation using UNet                           | [Week 10](./week10/) |
 
 ## Connecting Jupyter Notebook With Your AI
 Jupyter Lab can be integrated with your AI model of choice using the [MCP protocol](https://modelcontextprotocol.io/docs/getting-started/intro). Simply start Jupyter Lab with `just` using
