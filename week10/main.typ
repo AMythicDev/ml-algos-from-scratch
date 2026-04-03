@@ -111,16 +111,19 @@ Dataset loaded with 7390 items with split: Train 5173, Val 1108, Test 1109
 #figure(image("fig1.png"), caption: [Sample image and trimap mask.])
 
 == UNet architecture
-This section defines the UNet encoder-decoder architecture with optional skip connections, batch normalization, and dropout.
+The UNet architecture is a convolutional neural network designed for fast and precise image segmentation. It consists of a symmetric structure with an encoder (contracting path) to capture context and a decoder (expansive path) to enable precise localization. A key innovation of UNet is the use of skip connections, which concatenate feature maps from the encoder to the corresponding layers in the decoder, allowing the network to retain high-resolution spatial information lost during downsampling.
+
+=== The `DoubleConv` class
+The `DoubleConv` class serves as the fundamental building block of the UNet. It encapsulates two consecutive $3 times 3$ convolutional layers, each followed by an optional Batch Normalization layer and a ReLU activation function. This block is responsible for feature extraction and refinement at each level of the network. The use of two convolutions allows for a deeper receptive field and more complex feature representations while maintaining the spatial dimensions through padding.
 
 === The `forward()` function in `DoubleConv`
 + Applies a two-layer convolutional block with optional batch normalization and dropout.
 
 === The `forward()` function in `UNet`
-+ Encodes inputs with successive downsampling blocks and max pooling.
-+ Processes the bottleneck feature map before upsampling in the decoder.
-+ Concatenates encoder features via skip connections when enabled.
-+ Produces per-pixel class logits through the final 1x1 convolution.
++ Encodes inputs with successive downsampling blocks and max pooling to capture high-level features.
++ Processes the bottleneck feature map at the lowest resolution to bridge the encoder and decoder.
++ Upsamples feature maps and concatenates encoder features via skip connections to recover spatial detail.
++ Produces per-pixel class logits through a final $1 times 1$ convolution layer.
 
 #codly(header: [*UNet building blocks*], number-format: numbering.with("1"))
 ```python
@@ -311,12 +314,9 @@ The baseline experiment trains a standard UNet with skip connections using cross
 ```python
 model_1 = UNet(use_skip=True, use_bn=False, drop_p=0.0).to(device)
 trainable_params_1 = sum(p.numel() for p in model_1.parameters() if p.requires_grad)
-
 criterion_1 = nn.CrossEntropyLoss()
 optimizer_1 = optim.Adam(model_1.parameters(), lr=0.001)
-
 train_losses_1, val_losses_1 = train_model(model_1, train_loader, val_loader, criterion_1, optimizer_1, num_epochs=30, device=device)
-
 plot_curves(train_losses_1, val_losses_1, "Baseline UNet: Loss Curves")
 miou_1, dice_1 = evaluate_model(model_1, test_loader, device=device)
 ```
@@ -324,6 +324,7 @@ miou_1, dice_1 = evaluate_model(model_1, test_loader, device=device)
 #codly(header: [*Result*], number-format: none)
 ```
 Total Trainable Parameters: 31031875
+Epoch [30/30], Train Loss: 0.1781, Val Loss: 0.3404
 Test mIoU: 0.7270, Test Dice Coefficient: 0.8302
 ```
 
@@ -339,12 +340,9 @@ This experiment disables skip connections to assess their impact on segmentation
 ```python
 model_2 = UNet(use_skip=False, use_bn=False, drop_p=0.0).to(device)
 trainable_params_2 = sum(p.numel() for p in model_2.parameters() if p.requires_grad)
-
 criterion_2 = nn.CrossEntropyLoss()
 optimizer_2 = optim.Adam(model_2.parameters(), lr=0.001)
-
 train_losses_2, val_losses_2 = train_model(model_2, train_loader, val_loader, criterion_2, optimizer_2, num_epochs=30, device=device)
-
 plot_curves(train_losses_2, val_losses_2, "No Skip Connections: Loss Curves")
 miou_2, dice_2 = evaluate_model(model_2, test_loader, device=device)
 ```
@@ -352,6 +350,10 @@ miou_2, dice_2 = evaluate_model(model_2, test_loader, device=device)
 #codly(header: [*Result*], number-format: none)
 ```
 Total Trainable Parameters: 27898435
+Epoch [1/30], Train Loss: 1.2116, Val Loss: 0.8489
+Epoch [10/30], Train Loss: 0.3369, Val Loss: 0.3761
+Epoch [20/30], Train Loss: 0.2346, Val Loss: 0.3224
+Epoch [30/30], Train Loss: 0.9157, Val Loss: 0.9083
 Test mIoU: 0.5376, Test Dice Coefficient: 0.6236
 ```
 
@@ -361,10 +363,7 @@ Test mIoU: 0.5376, Test Dice Coefficient: 0.6236
 The skip-connection ablation reduces the parameter count to 27,898,435 and yields lower test performance with mIoU 0.5376 and Dice 0.6236, alongside the displayed training and validation loss curves.
 
 == Experiment 3: Loss function ablation (cross-entropy + Dice)
-This experiment introduces a combined cross-entropy and Dice loss to evaluate its effect on performance.
-
-=== The `forward()` function in `CEDiceLoss`
-+ Computes a weighted sum of cross-entropy loss and Dice loss for multi-class segmentation.
+This experiment introduces a weighted sum of cross-entropy loss and Dice loss to evaluate the model's performance on multi-class segmentation.
 
 #codly(header: [*Combined CE and Dice loss*], number-format: numbering.with("1"))
 ```python
@@ -376,18 +375,12 @@ class CEDiceLoss(nn.Module):
 
     def forward(self, logits, targets):
         return self.ce_weight * self.ce(logits, targets) + self.dice_weight * self.dice(logits, targets)
-```
 
-#codly(header: [*UNet with CE + Dice loss*], number-format: numbering.with("1"))
-```python
 model_3 = UNet(use_skip=True, use_bn=False, drop_p=0.0).to(device)
 trainable_params_3 = sum(p.numel() for p in model_3.parameters() if p.requires_grad)
-
 criterion_3 = CEDiceLoss()
 optimizer_3 = optim.Adam(model_3.parameters(), lr=0.001)
-
 train_losses_3, val_losses_3 = train_model(model_3, train_loader, val_loader, criterion_3, optimizer_3, num_epochs=30, device=device)
-
 plot_curves(train_losses_3, val_losses_3, "CE + Dice Loss: Loss Curves")
 miou_3, dice_3 = evaluate_model(model_3, test_loader, device=device)
 ```
@@ -395,6 +388,10 @@ miou_3, dice_3 = evaluate_model(model_3, test_loader, device=device)
 #codly(header: [*Result*], number-format: none)
 ```
 Total Trainable Parameters: 31031875
+Epoch [1/30], Train Loss: 0.9544, Val Loss: 0.9263
+Epoch [10/30], Train Loss: 0.9165, Val Loss: 0.9091
+Epoch [20/30], Train Loss: 0.9154, Val Loss: 0.9083
+Epoch [30/30], Train Loss: 0.8119, Val Loss: 0.8359
 Test mIoU: 0.5873, Test Dice Coefficient: 0.7251
 ```
 
@@ -423,6 +420,10 @@ miou_4, dice_4 = evaluate_model(model_4, test_loader, device=device)
 #codly(header: [*Result*], number-format: none)
 ```
 Total Trainable Parameters: 31043651
+Epoch [1/30], Train Loss: 1.4943, Val Loss: 1.4164
+Epoch [10/30], Train Loss: 1.0336, Val Loss: 1.0440
+Epoch [20/30], Train Loss: 0.8768, Val Loss: 0.8918
+Epoch [30/30], Train Loss: 0.2688, Val Loss: 0.3828
 Test mIoU: 0.4638, Test Dice Coefficient: 0.7618
 ```
 
@@ -430,6 +431,22 @@ Test mIoU: 0.4638, Test Dice Coefficient: 0.7618
 
 == Observations
 The regularized UNet has 31,043,651 trainable parameters and achieves test mIoU 0.4638 with Dice 0.7618, while the plotted curves summarize the loss trajectory under batch normalization and dropout.
+
+== Performance comparison
+The following table summarizes the performance metrics and architectural differences across all four experiments. The baseline UNet model demonstrates the best performance in terms of mIoU, while the inclusion of skip connections is critical for achieving high segmentation accuracy.
+
+#align(center)[
+  #table(
+    columns: (auto, auto, auto, auto, auto),
+    inset: 10pt,
+    align: horizon,
+    [*Experiment*], [*Skip Conn.*], [*Loss Function*], [*Test mIoU*], [*Test Dice*],
+    [Baseline UNet], [Yes], [Cross-Entropy], [0.7270], [0.8302],
+    [No Skip Connections], [No], [Cross-Entropy], [0.5376], [0.6236],
+    [CE + Dice Loss], [Yes], [CE + Dice], [0.5873], [0.7251],
+    [BN + Dropout], [Yes], [CE + Dice], [0.4638], [0.7618],
+  )
+]
 
 == Conclusion
 + A custom dataset pipeline standardizes image-mask pairs to 256x256 resolution and confirms dataset integrity through a visual sample.
